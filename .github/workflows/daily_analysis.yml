@@ -3,7 +3,7 @@ name: 每日股票分析
 on:
   # 定时触发 - 每天北京时间 18:00 (UTC 10:00)
   schedule:
-    - cron: '0 10 * * 1-5'     # 周一到周五，UTC 10:00 = 北京时间 18:00
+    - cron: '0 10 * * *'     # 每天都运行（含周末节假日）
   
   # 手动触发
   workflow_dispatch:
@@ -334,7 +334,7 @@ jobs:
           SINGLE_STOCK_NOTIFY: ${{ vars.SINGLE_STOCK_NOTIFY || secrets.SINGLE_STOCK_NOTIFY || 'false' }}
           MARKET_REVIEW_ENABLED: ${{ vars.MARKET_REVIEW_ENABLED || secrets.MARKET_REVIEW_ENABLED || 'true' }}
           ANALYSIS_DELAY: ${{ vars.ANALYSIS_DELAY || secrets.ANALYSIS_DELAY || '0' }}
-          TRADING_DAY_CHECK_ENABLED: ${{ vars.TRADING_DAY_CHECK_ENABLED || secrets.TRADING_DAY_CHECK_ENABLED || 'true' }}
+          TRADING_DAY_CHECK_ENABLED: 'false'
           
           # ==========================================
           # 系统配置
@@ -420,14 +420,7 @@ jobs:
           echo "=========================================="
           echo ""
           
-          # 构建命令行参数
-          FORCE_RUN_ARG=""
-          if [ "${{ github.event.inputs.force_run }}" = "true" ]; then
-            FORCE_RUN_ARG="--force-run"
-            echo "⚡ 已启用强制运行模式（跳过交易日检查）"
-          fi
-
-          # 执行分析
+          # 执行分析，全部强制运行
           if [ "$MODE" = "market-only" ]; then
             python main.py --market-review --force-run
           elif [ "$MODE" = "stocks-only" ]; then
